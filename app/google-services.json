@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "261617646396",
+    "project_id": "agendamedica-78978",
+    "storage_bucket": "agendamedica-78978.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261617646396:android:29702c9c0f0928cf047c39",
+        "android_client_info": {
+          "package_name": "com.example.agendamedica"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJSkmjOx3U_xjnceAeTc4m35-9gRuS6HY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
