@@ -45,10 +45,15 @@ android {
 
 dependencies {
 
+
     //Firebase bom
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     //Dependencias del producto de firebase
     implementation("com.google.firebase:firebase-analytics")
+    // Firebase Authentication
+    implementation("com.google.firebase:firebase-auth")
+    // Opcional: Si usarás Firestore para almacenar datos de usuarios
+    implementation("com.google.firebase:firebase-firestore")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -66,3 +71,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+apply(plugin = "com.google.gms.google-services")
