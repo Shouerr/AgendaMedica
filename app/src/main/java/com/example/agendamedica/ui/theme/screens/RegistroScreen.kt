@@ -12,6 +12,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,11 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.agendamedica.viewmodel.AuthViewModel
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 
 @Composable
 fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+    var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -52,6 +52,14 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            value = nombre,
+            onValueChange = { nombre = it },
+            label = { Text("Nombre") }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Correo Electrónico") }
@@ -69,7 +77,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            authViewModel.register(email, password)
+            authViewModel.register(email, password, nombre)
         }) {
             Text("Registrarse")
         }
