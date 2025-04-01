@@ -6,9 +6,9 @@ data class CitaModel(
     val usuarioId: String = "",
     val fecha: String = "",
     val hora: String = "",
-    val ubicacion: String = "",
+    val ubicacion:  Ubicacion = Ubicacion(),
     val medico: String = "",
     val motivo: String = "",
-    val estado: String = "",
+    val estado: String = "" //Confirmada, cancelada, completada
 )
 

@@ -1,4 +1,6 @@
-package com.example.agendamedica.model
+package com.example.agendamedica.ui.state
+
+import com.example.agendamedica.model.CitaModel
 
 data class CitaState(
     val isLoading: Boolean = false,
