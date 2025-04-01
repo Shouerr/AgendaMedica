@@ -1,4 +1,4 @@
-package com.example.agendamedica.ui.theme.screens
+package com.example.agendamedica.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package com.example.agendamedica.data.databasee.interfaces
+package com.example.agendamedica.data.database.interfaces
 
 import com.example.agendamedica.model.CitaModel
 import com.google.firebase.firestore.FirebaseFirestore

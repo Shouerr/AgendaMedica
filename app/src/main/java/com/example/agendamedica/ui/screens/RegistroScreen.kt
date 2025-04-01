@@ -1,4 +1,4 @@
-package com.example.agendamedica.ui.theme.screens
+package com.example.agendamedica.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,35 +27,41 @@ import androidx.navigation.NavController
 import com.example.agendamedica.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+    var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val userState = authViewModel.user.collectAsState().value
 
-    val userState by authViewModel.user.collectAsState()
-
-    // Redirigir a HomeScreen si el usuario está autenticado
     LaunchedEffect(userState) {
         userState?.let {
             navController.navigate("home") {
-                popUpTo("login") { inclusive = true } // Evita volver atrás
+                popUpTo("registro") { inclusive = true } // Evita volver atrás
             }
         }
     }
 
-
-    Column (
+    Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "Registro de Usuario", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            value = nombre,
+            onValueChange = { nombre = it },
+            label = { Text("Nombre") }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
             value = email,
-            onValueChange = {email = it},
+            onValueChange = { email = it },
             label = { Text("Correo Electrónico") }
         )
 
@@ -63,17 +69,17 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
 
         OutlinedTextField(
             value = password,
-            onValueChange = {password = it},
-            label = {Text("Contraseña")},
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick =  {
-            authViewModel.login(email, password)
+        Button(onClick = {
+            authViewModel.register(email, password, nombre)
         }) {
-            Text("Ingresar")
+            Text("Registrarse")
         }
 
         errorMessage?.let {
@@ -83,10 +89,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick =  { navController.navigate("Registro") }) {
-            Text("¿No tienes una cuenta? Regístrate aquí")
+        TextButton(onClick = { navController.navigate("login") }) {
+            Text("¿Ya tienes una cuenta? Inicia sesión aquí")
         }
-
     }
-
 }

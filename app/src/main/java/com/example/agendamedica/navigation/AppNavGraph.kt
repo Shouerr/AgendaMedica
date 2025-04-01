@@ -1,12 +1,11 @@
-package com.example.agendamedica.userinterface.navigation
+package com.example.agendamedica.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.agendamedica.ui.theme.screens.LoginScreen
-import com.example.agendamedica.ui.theme.screens.RegistroScreen
-import com.example.agendamedica.ui.theme.screens.HomeScreen
+import com.example.agendamedica.ui.screens.* // trae todo de la carpeta de screens
+
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -14,5 +13,7 @@ fun AppNavGraph(navController: NavHostController) {
         composable("login") { LoginScreen(navController) }
         composable("registro") { RegistroScreen(navController) }
         composable("home") { HomeScreen(navController) }
+        composable("cita") { CitaScreen(navController) }
+        composable("perfil") { PerfilScreen(navController) }
     }
 }

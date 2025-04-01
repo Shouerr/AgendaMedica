@@ -1,4 +1,4 @@
-package com.example.agendamedica.data.databasee.repository
+package com.example.agendamedica.data.database.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser

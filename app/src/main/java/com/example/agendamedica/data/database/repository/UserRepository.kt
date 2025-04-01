@@ -1,4 +1,4 @@
-package com.example.agendamedica.data.databasee.repository
+package com.example.agendamedica.data.database.repository
 
 //implementación autenticación
 import com.example.agendamedica.model.UserModel
