@@ -7,8 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.agendamedica.model.CitaModel
 import com.example.agendamedica.model.Ubicacion
 import com.example.agendamedica.ui.state.CitaState
-import kotlinx.coroutines.delay
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 
 class CitaViewModel  : ViewModel() {
@@ -16,8 +17,8 @@ class CitaViewModel  : ViewModel() {
     private val _state = mutableStateOf(CitaState())
     val state: State<CitaState> = _state
 
-    // Simulación de base de datos local (mientras no conectes Firebase)
-    private val citasSimuladas = mutableListOf<CitaModel>()
+    private val db = FirebaseFirestore.getInstance()
+    private val citasCollection = db.collection("citas")
 
     // Función para agregar una cita
     fun agregarCita(
@@ -41,24 +42,28 @@ class CitaViewModel  : ViewModel() {
                 estado = "confirmada"
             )
 
-            citasSimuladas.add(nuevaCita)
+            try {
+                citasCollection.document(nuevaCita.idCita).set(nuevaCita).await()
+                cargarCitas() // recarga desde Firebase
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(error = "Error al guardar cita: ${e.message}")
+            }
 
-            _state.value = _state.value.copy(
-                isLoading = false,
-                citas = citasSimuladas.toList()
-            )
+            _state.value = _state.value.copy(isLoading = false)
         }
     }
 
     fun cargarCitas() {
-        _state.value = _state.value.copy(isLoading = true)
-        // Simulación
         viewModelScope.launch {
-            delay(1000)
-            _state.value = _state.value.copy(
-                isLoading = false,
-                citas = listOf(/* tus citas cargadas */)
-            )
+            _state.value = _state.value.copy(isLoading = true)
+
+            try {
+                val snapshot = citasCollection.get().await()
+                val citas = snapshot.toObjects(CitaModel::class.java)
+                _state.value = _state.value.copy(citas = citas, isLoading = false)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(error = "Error al cargar citas: ${e.message}", isLoading = false)
+            }
         }
     }
 }

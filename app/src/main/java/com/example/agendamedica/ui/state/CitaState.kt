@@ -4,6 +4,6 @@ import com.example.agendamedica.model.CitaModel
 
 data class CitaState(
     val isLoading: Boolean = false,
-    val error: String? = null,
-    val citas: List<CitaModel> = emptyList()
+    val citas: List<CitaModel> = emptyList(),
+    val error: String? = null
 )

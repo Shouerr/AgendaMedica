@@ -1,6 +1,7 @@
 package com.example.agendamedica.data.database.repository
 
 //implementación autenticación
+import android.util.Log
 import com.example.agendamedica.model.UserModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -19,14 +20,15 @@ class UserRepository {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
             result.user?.let { firebaseUser ->
                 val user = UserModel(
-                    id = firebaseUser.uid, // ID del usuario en Auth
+                    id = firebaseUser.uid,
                     nombre = nombre,
                     correoElectronico = email
                 )
-                registrarUsuario(user) // Guardar en Firestore
+                registrarUsuario(user)
             }
             result.user
         } catch (e: Exception) {
+            Log.e("UserRepository", "Error al registrar usuario: ${e.message}")
             null
         }
     }
@@ -37,6 +39,7 @@ class UserRepository {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             result.user
         } catch (e: Exception) {
+            Log.e("UserRepository", "Error al iniciar sesión: ${e.message}")
             null
         }
     }
@@ -53,11 +56,20 @@ class UserRepository {
 
     // Obtener usuario de Firestore
     suspend fun obtenerUsuario(uid: String): UserModel? {
-        return usersCollection.document(uid).get().await().toObject(UserModel::class.java)
+        return try {
+            usersCollection.document(uid).get().await().toObject(UserModel::class.java)
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error al obtener usuario: ${e.message}")
+            null
+        }
     }
 
     // Guardar usuario en Firestore
     private suspend fun registrarUsuario(user: UserModel) {
-        usersCollection.document(user.id).set(user).await()
+        try {
+            usersCollection.document(user.id).set(user).await()
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error al guardar usuario: ${e.message}")
+        }
     }
 }
