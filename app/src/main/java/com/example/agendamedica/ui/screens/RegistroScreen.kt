@@ -31,19 +31,24 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val userState = authViewModel.user.collectAsState().value
 
+    val userState by authViewModel.user.collectAsState()
+    val authError by authViewModel.authError.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+
+    // Navegar a Home si se registra exitosamente
     LaunchedEffect(userState) {
         userState?.let {
             navController.navigate("home") {
-                popUpTo("registro") { inclusive = true } // Evita volver atrás
+                popUpTo("registro") { inclusive = true }
             }
         }
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -54,7 +59,8 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
-            label = { Text("Nombre") }
+            label = { Text("Nombre") },
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -62,7 +68,8 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Correo Electrónico") }
+            label = { Text("Correo Electrónico") },
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -71,25 +78,41 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            authViewModel.register(email, password, nombre)
-        }) {
+        Button(
+            onClick = {
+                authViewModel.register(email, password, nombre)
+            },
+            enabled = !isLoading && nombre.isNotBlank() && email.isNotBlank() && password.length >= 6
+        ) {
             Text("Registrarse")
         }
 
-        errorMessage?.let {
+        // Indicador de carga
+        if (isLoading) {
+            Spacer(modifier = Modifier.height(8.dp))
+            androidx.compose.material3.CircularProgressIndicator()
+        }
+
+        //  Mostrar error si lo hay
+        authError?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = it, color = MaterialTheme.colorScheme.error)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { navController.navigate("login") }) {
+        TextButton(
+            onClick = {
+                authViewModel.resetError() // Limpia error si había
+                navController.navigate("login")
+            }
+        ) {
             Text("¿Ya tienes una cuenta? Inicia sesión aquí")
         }
     }

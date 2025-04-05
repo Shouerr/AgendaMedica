@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,26 +27,29 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.agendamedica.viewmodel.AuthViewModel
 
+
 @Composable
 fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val userState by authViewModel.user.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+    val authError by authViewModel.authError.collectAsState()
 
     // Redirigir a HomeScreen si el usuario está autenticado
     LaunchedEffect(userState) {
         userState?.let {
             navController.navigate("home") {
-                popUpTo("login") { inclusive = true } // Evita volver atrás
+                popUpTo("login") { inclusive = true }
             }
         }
     }
 
-
-    Column (
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -55,38 +59,52 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
 
         OutlinedTextField(
             value = email,
-            onValueChange = {email = it},
-            label = { Text("Correo Electrónico") }
+            onValueChange = { email = it },
+            label = { Text("Correo Electrónico") },
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = {password = it},
-            label = {Text("Contraseña")},
-            visualTransformation = PasswordVisualTransformation()
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation(),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick =  {
-            authViewModel.login(email, password)
-        }) {
+        Button(
+            onClick = {
+                authViewModel.login(email, password)
+            },
+            enabled = !isLoading && email.isNotBlank() && password.length >= 6
+        ) {
             Text("Ingresar")
         }
 
-        errorMessage?.let {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ⏳ Indicador de carga
+        if (isLoading) {
+            CircularProgressIndicator()
+        }
+
+        // 🚨 Mostrar errores
+        authError?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = it, color = MaterialTheme.colorScheme.error)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick =  { navController.navigate("Registro") }) {
-            Text("¿No tienes una cuenta? Regístrate aquí")
+        TextButton(onClick = {
+            authViewModel.resetError() // Limpia el error al cambiar de pantalla
+            navController.navigate("Registro")
+        }) {
+            Text("¿No tienes cuenta? Regístrate aquí")
         }
-
     }
-
 }
