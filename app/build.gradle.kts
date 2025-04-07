@@ -3,9 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 
+
     //instrucciones de firebase para los servicios de googlee
 
-    id("com.google.gms.google-services")
 }
 
 android {
@@ -46,6 +46,7 @@ android {
 dependencies {
 
 
+    implementation ("androidx.compose.material:material-icons-extended:1.1.0")
     //Firebase bom
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     //Dependencias del producto de firebase
