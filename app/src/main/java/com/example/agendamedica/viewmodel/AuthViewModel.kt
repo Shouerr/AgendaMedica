@@ -1,5 +1,6 @@
 package com.example.agendamedica.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agendamedica.data.database.repository.UserRepository
@@ -28,14 +29,27 @@ class AuthViewModel(
     fun register(email: String, password: String, nombre: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val newUser = userRepository.registerUser(email, password, nombre)
-            _isLoading.value = false
+            Log.d("AuthViewModel", "Inicio del registro...")
 
-            if (newUser != null) {
-                _user.value = newUser
-                _authError.value = null
-            } else {
-                _authError.value = "Error al registrar usuario"
+            try {
+                val newUser = userRepository.registerUser(email, password, nombre)
+
+                // Después de intentar registrar el usuario, restablecer el estado de carga
+                _isLoading.value = false
+
+                if (newUser != null) {
+                    // Actualiza el estado de _user con el FirebaseUser directamente
+                    _user.value = newUser // Aquí asignamos el FirebaseUser a _user
+                    _authError.value = null
+                    Log.d("AuthViewModel", "Registro completado.")
+                } else {
+                    _authError.value = "El usuario ya existe"
+                    Log.e("AuthViewModel", "Usuario no registrado: Usuario ya existe.")
+                }
+            } catch (e: Exception) {
+                _isLoading.value = false
+                _authError.value = "Error al registrar usuario: ${e.message}"
+                Log.e("AuthViewModel", "Error al registrar usuario: ${e.message}")
             }
         }
     }
@@ -50,8 +64,9 @@ class AuthViewModel(
             if (loggedInUser != null) {
                 _user.value = loggedInUser
                 _authError.value = null
+                Log.d("AuthViewModel", "Login exitoso: ${loggedInUser.email}")
             } else {
-                _authError.value = "Error al iniciar sesión"
+                _authError.value = "Usuario no registrado"
             }
         }
     }

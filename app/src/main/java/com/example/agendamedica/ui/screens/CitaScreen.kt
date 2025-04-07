@@ -1,5 +1,6 @@
 package com.example.agendamedica.ui.screens
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -7,12 +8,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -22,10 +28,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.agendamedica.viewmodel.CitaViewModel
+import java.util.Calendar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,13 +114,24 @@ fun CitaScreen(
     var hora by remember { mutableStateOf("") }
     var provincia by remember { mutableStateOf("") }
     var hospital by remember { mutableStateOf("") }
+    var medico by remember { mutableStateOf("") }
     var motivo by remember { mutableStateOf("") }
+    var amPm by remember { mutableStateOf("AM") }  // AM o PM
 
     // Estados de los dropdowns
     var provinciaExpanded by remember { mutableStateOf(false) }
     var hospitalExpanded by remember { mutableStateOf(false) }
 
     val hospitales = hospitalesPorProvincia[provincia] ?: emptyList()
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+    val datePickerDialog = remember { DatePickerDialog(context, DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+        // Asignamos la fecha seleccionada al estado
+        fecha = "$dayOfMonth/${month + 1}/$year"  // mes + 1 porque los meses empiezan en 0
+    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)) }
+
+
 
     Column(
         modifier = Modifier
@@ -126,19 +146,29 @@ fun CitaScreen(
             value = fecha,
             onValueChange = { fecha = it },
             label = { Text("Fecha (DD/MM/AAAA)") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true, // Para evitar que el usuario escriba directamente
+            trailingIcon = {
+                IconButton(onClick = { datePickerDialog.show() }) {
+                    Icon(
+                        imageVector = Icons.Filled.CalendarToday,
+                        contentDescription = "Seleccionar Fecha"
+                    )
+                }
+            }
         )
 
         OutlinedTextField(
             value = hora,
             onValueChange = { hora = it },
             label = { Text("Hora (HH:MM)") },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔽 Selector de Provincia
+        // Selector de Provincia
         ExposedDropdownMenuBox(
             expanded = provinciaExpanded,
             onExpandedChange = { provinciaExpanded = !provinciaExpanded }
@@ -174,7 +204,7 @@ fun CitaScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔽 Selector de Hospital (filtrado)
+        // Selector de Hospital (filtrado)
         if (provincia.isNotEmpty()) {
             ExposedDropdownMenuBox(
                 expanded = hospitalExpanded,
@@ -211,6 +241,17 @@ fun CitaScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        //Campo del médico
+        OutlinedTextField(
+            value = medico,
+            onValueChange = { medico = it },
+            label = { Text("Médico") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        //Campo del motivo
         OutlinedTextField(
             value = motivo,
             onValueChange = { motivo = it },

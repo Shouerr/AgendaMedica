@@ -35,8 +35,4 @@ class AuthRepository {
     fun logout() {
         auth.signOut()
     }
-
-
-
-
 }

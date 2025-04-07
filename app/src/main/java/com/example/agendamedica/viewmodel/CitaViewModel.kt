@@ -1,5 +1,6 @@
 package com.example.agendamedica.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -66,4 +67,17 @@ class CitaViewModel  : ViewModel() {
             }
         }
     }
+
+    // Función para eliminar una cita
+    fun eliminarCita(idCita: String) {
+        viewModelScope.launch {
+            try {
+                citasCollection.document(idCita).delete().await()
+                cargarCitas() // Recargar las citas después de la eliminación
+            } catch (e: Exception) {
+                Log.e("CitaViewModel", "Error al eliminar cita: ${e.message}")
+            }
+        }
+    }
+
 }

@@ -1,13 +1,20 @@
 package com.example.agendamedica.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,14 +39,13 @@ fun HomeScreen(
     authViewModel: AuthViewModel = viewModel(),
     citaViewModel: CitaViewModel = viewModel()
 ) {
-    val userState = authViewModel.user.collectAsState(initial = null).value
+    val userState = authViewModel.user.collectAsState().value
     val citaState = citaViewModel.state.value
 
-    // Cargar citas al entrar
     LaunchedEffect(userState) {
         if (userState == null) {
             navController.navigate("login") {
-                popUpTo("home") { inclusive = true }
+                popUpTo("home") { inclusive = true } // Asegúrate de limpiar la pila de navegación
             }
         } else {
             citaViewModel.cargarCitas()
@@ -102,9 +108,31 @@ fun HomeScreen(
                     Text(" ${cita.fecha} - ${cita.hora}")
                     Text(" ${cita.ubicacion.provincia} - ${cita.ubicacion.hospital}")
                     Text(" ${cita.motivo}")
-                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        // Botón de Editar
+                        IconButton(onClick = {
+                            // Lógica para editar la cita
+                            navController.navigate("editarCita/${cita.idCita}")
+                        }) {
+                            Icon(imageVector = Icons.Filled.Edit, contentDescription = "Editar Cita")
+                        }
+
+//                        // Botón de Eliminar
+//                        IconButton(onClick = {
+//                            // Lógica para eliminar la cita
+//                            citaViewModel.eliminarCita(cita.idCita)
+//                        }) {
+//                            Icon(imageVector = Icons.Filled.Delete, contentDescription = "Eliminar Cita")
+//                        }
+                    }
                 }
             }
         }
     }
 }
+
+

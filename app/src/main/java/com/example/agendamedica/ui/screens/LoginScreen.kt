@@ -37,9 +37,9 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     val isLoading by authViewModel.isLoading.collectAsState()
     val authError by authViewModel.authError.collectAsState()
 
-    // Redirigir a HomeScreen si el usuario está autenticado
+    // Solo navegar al Home si el usuario está autenticado y no lo habíamos hecho antes
     LaunchedEffect(userState) {
-        userState?.let {
+        if (userState != null) {
             navController.navigate("home") {
                 popUpTo("login") { inclusive = true }
             }
@@ -87,12 +87,12 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ⏳ Indicador de carga
+        // Indicador de carga
         if (isLoading) {
             CircularProgressIndicator()
         }
 
-        // 🚨 Mostrar errores
+        // Mostrar errores
         authError?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = it, color = MaterialTheme.colorScheme.error)

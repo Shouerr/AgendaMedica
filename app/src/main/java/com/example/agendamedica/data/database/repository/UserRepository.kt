@@ -51,7 +51,9 @@ class UserRepository {
 
     // Obtener usuario actual
     fun getCurrentUser(): FirebaseUser? {
-        return auth.currentUser
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        Log.d("AuthViewModel", "Current user: ${currentUser?.email ?: "No user"}")
+        return currentUser
     }
 
     // Obtener usuario de Firestore

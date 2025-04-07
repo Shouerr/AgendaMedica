@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,8 +38,9 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
     val isLoading by authViewModel.isLoading.collectAsState()
 
     // Navegar a Home si se registra exitosamente
+    // Mover la navegación al lugar correcto después de que el usuario se registre
     LaunchedEffect(userState) {
-        userState?.let {
+        if (userState != null) {
             navController.navigate("home") {
                 popUpTo("registro") { inclusive = true }
             }
@@ -95,8 +97,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
 
         // Indicador de carga
         if (isLoading) {
-            Spacer(modifier = Modifier.height(8.dp))
-            androidx.compose.material3.CircularProgressIndicator()
+            CircularProgressIndicator()
         }
 
         //  Mostrar error si lo hay
