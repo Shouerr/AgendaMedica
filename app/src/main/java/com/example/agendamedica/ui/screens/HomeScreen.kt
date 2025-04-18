@@ -168,7 +168,7 @@ fun HomeScreen(
     }
 
     // Diálogo de confirmación de eliminación
-    if (showDialog) {
+    if (showDialog && citaAEliminar != null) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Confirmar eliminación") },

@@ -1,6 +1,8 @@
 package com.example.agendamedica.ui.screens
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.widget.TimePicker
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -116,7 +119,21 @@ fun CitaScreen(
     var hospital by remember { mutableStateOf("") }
     var medico by remember { mutableStateOf("") }
     var motivo by remember { mutableStateOf("") }
-    var amPm by remember { mutableStateOf("AM") }  // AM o PM
+
+    // Estado para el TimePickerDialog
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+    val timePickerDialog = remember {
+        TimePickerDialog(
+            context,
+            { _: TimePicker, hourOfDay: Int, minute: Int ->
+                hora = String.format("%02d:%02d", hourOfDay, minute)
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        )
+    }
 
     // Estados de los dropdowns
     var provinciaExpanded by remember { mutableStateOf(false) }
@@ -124,9 +141,10 @@ fun CitaScreen(
 
     val hospitales = hospitalesPorProvincia[provincia] ?: emptyList()
 
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
+    //val context = LocalContext.current
+    //val calendar = Calendar.getInstance()
     val datePickerDialog = remember { DatePickerDialog(context, DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+
         // Asignamos la fecha seleccionada al estado
         fecha = "$dayOfMonth/${month + 1}/$year"  // mes + 1 porque los meses empiezan en 0
     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)) }
@@ -158,12 +176,19 @@ fun CitaScreen(
             }
         )
 
+        // Campo de Hora con el TimePickerDialog
         OutlinedTextField(
             value = hora,
-            onValueChange = { hora = it },
+            onValueChange = { hora = it }, // Actualizar el valor solo si el TimePicker no está siendo usado
             label = { Text("Hora (HH:MM)") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true, // Para evitar que se escriba manualmente
+            trailingIcon = {
+                IconButton(onClick = { timePickerDialog.show() }) {
+                    Icon(imageVector = Icons.Filled.AccessTime, contentDescription = "Seleccionar Hora")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
