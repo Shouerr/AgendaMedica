@@ -68,7 +68,7 @@ fun CitaScreen(
             "Centro Médico VillaMed", "Centro Médico Vital", "Centro Médico Yireh", "Centro Médico Zarcero", "Centro Médico Zeledón, Bribrí",
             "Centro Médico Zeledón, Puerto Viejo", "Centro Médico para la Mujer", "Centro Médico y Cirugía Menor San José",
             "Centro Médico y Estético Ikigai", "Centro Médico y Estético Nosara", "Centro Nacional de Rehabilitación Dr. Humberto Araya Rojas",
-            "Clínica Andar C.R.", "Clínica Hospital Santa Catalina", "Clínica Zahha", "Hospital CIMA San José", "Hospital Clínica Bíblica",
+            "Clínica Andar C.R.", "Clínica Dr. Carlos Durán Cartín", "Clínica Hospital Santa Catalina", "Clínica Zahha", "Hospital CIMA San José", "Hospital Clínica Bíblica",
             "Hospital Clínica Santa Rita", "Hospital Clínica Unibe", "Hospital Cristiano Jerusalem", "Hospital La Católica",
             "Hospital Metropolitano", "Hospital México", "Hospital Nacional Psiquiátrico Manuel Antonio Chapuí y Torres",
             "Hospital Nacional de Geriatría y Gerontología Dr. Raúl Blanco Cervantes", "Hospital Nacional de Niños Carlos Sáenz Herrera",
