@@ -268,7 +268,7 @@ fun CitaScreen(
                     hora = hora,
                     provincia = provincia,
                     hospital = hospital,
-                    medico = "Sin asignar",
+                    medico = medico,
                     motivo = motivo
                 )
                 navController.popBackStack()

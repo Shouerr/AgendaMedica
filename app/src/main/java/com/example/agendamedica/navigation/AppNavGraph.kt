@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.agendamedica.ui.screens.CitaScreen
+import com.example.agendamedica.ui.screens.EditarCitaScreen
 import com.example.agendamedica.ui.screens.HomeScreen
 import com.example.agendamedica.ui.screens.LoginScreen
 import com.example.agendamedica.ui.screens.PerfilScreen
@@ -29,11 +30,18 @@ fun AppNavGraph(navController: NavHostController, authViewModel: AuthViewModel =
         }
     }
 
-    NavHost(navController = navController, startDestination = if (userState != null) "home" else "login") {
+    NavHost(
+        navController = navController,
+        startDestination = if (userState != null) "home" else "login"
+    ) {
         composable("login") { LoginScreen(navController) }
         composable("registro") { RegistroScreen(navController) }
         composable("home") { HomeScreen(navController) }
         composable("perfil") { PerfilScreen(navController) }
         composable("cita") { CitaScreen(navController) }
+        composable("editarCita/{idCita}") { backStackEntry ->
+            val idCita = backStackEntry.arguments?.getString("idCita") ?: ""
+            EditarCitaScreen(navController = navController, idCita = idCita)
+        }
     }
 }
