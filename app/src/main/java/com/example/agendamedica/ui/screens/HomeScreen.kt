@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -43,8 +44,10 @@ import com.example.agendamedica.viewmodel.CitaViewModel
 fun HomeScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    citaViewModel: CitaViewModel
-) {
+    citaViewModel: CitaViewModel,
+    toggleTheme: () -> Unit,
+
+    ) {
     val userState by authViewModel.user.collectAsState()
     val citaState by citaViewModel.state.collectAsState()
 
@@ -58,7 +61,16 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Agenda Médica") })
+            TopAppBar(title = { Text("Agenda Médica") },
+                actions = {
+                    IconButton(onClick = toggleTheme) {
+                        Icon(
+                            imageVector = Icons.Default.DarkMode,
+                            contentDescription = "Cambiar tema"
+                        )
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Column(

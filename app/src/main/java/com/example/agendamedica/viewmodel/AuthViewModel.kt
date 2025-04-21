@@ -45,7 +45,7 @@ class AuthViewModel(
                     _authError.value = null
                 } else {
                     Log.e("AuthViewModel", "El usuario ya existe o no se pudo registrar.")
-                    _authError.value = "El usuario ya existe"
+                    _authError.value = "Error al registrar usuario"
                 }
             } catch (e: Exception) {
                 _isLoading.value = false

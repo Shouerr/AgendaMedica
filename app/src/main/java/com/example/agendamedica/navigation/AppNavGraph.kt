@@ -18,7 +18,11 @@ import com.example.agendamedica.viewmodel.CitaViewModel
 
 
 @Composable
-fun AppNavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
+fun AppNavGraph(
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+    toggleTheme: () -> Unit
+){
     val userState by authViewModel.user.collectAsState()
 
 
@@ -30,7 +34,7 @@ fun AppNavGraph(navController: NavHostController, authViewModel: AuthViewModel) 
         composable("registro") { RegistroScreen(navController, authViewModel) }
         composable("home") {
             val citaViewModel: CitaViewModel = hiltViewModel()
-            HomeScreen(navController, authViewModel, citaViewModel)
+            HomeScreen(navController, authViewModel, citaViewModel, toggleTheme)
         }
         composable("perfil") { PerfilScreen(navController) }
         composable("cita") { CitaScreen(navController) }
