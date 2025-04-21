@@ -43,6 +43,7 @@ import com.example.agendamedica.viewmodel.CitaViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -58,6 +59,55 @@ fun HomeScreen(
     var citaAEliminar by remember { mutableStateOf<CitaModel?>(null) }
 
     //
+    @Composable
+    fun CitaCard(
+        cita: CitaModel,
+        navController: NavController,
+        citaViewModel: CitaViewModel,
+        onSolicitarEliminar: (CitaModel) -> Unit
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp), // Más compacto
+            shape = RoundedCornerShape(6.dp), // Un poco más ajustado
+            elevation = CardDefaults.elevatedCardElevation(2.dp) // Menor sombra
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "📅 ${cita.fecha}  🕒 ${cita.hora}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Row {
+                        IconButton(onClick = {
+                            navController.navigate("editarCita/${cita.idCita}")
+                        }) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Editar Cita")
+                        }
+
+                        IconButton(onClick = {
+                            onSolicitarEliminar(cita) // ✅ en lugar de eliminar directo
+                        }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Eliminar Cita")
+                        }
+                    }
+                }
+
+                Text(
+                    "📍 ${cita.ubicacion.provincia} - ${cita.ubicacion.hospital}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text("📝 Motivo: ${cita.motivo}", style = MaterialTheme.typography.bodyLarge)
+                Text("👨‍⚕️ Médico: ${cita.medico}", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         citaViewModel.cargarCitas()
     }
@@ -104,14 +154,14 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Button(onClick = {
-            authViewModel.logout()
-            navController.navigate("login") {
-                popUpTo(0)
-                launchSingleTop = true
-            }
-        }) {
-            Text("Cerrar sesión")
-        }
+                    authViewModel.logout()
+                    navController.navigate("login") {
+                        popUpTo(0)
+                        launchSingleTop = true
+                    }
+                }) {
+                    Text("Cerrar sesión")
+                }
 
 
                 Spacer(modifier = Modifier.height(35.dp))
@@ -129,92 +179,75 @@ fun HomeScreen(
                     Text("No hay citas registradas.")
                 }
 
-                else -> items(citaState.citas.sortedBy { it.fecha.split("/").let { partes ->
-                        val day = partes[0].padStart(2, '0')
-                        val month = partes[1].padStart(2, '0')
-                        val year = partes[2]
-                        "$year$month$day".toInt()
-                    }}, key = { it.idCita }) { cita ->
-
-                    CitaCard(
-                        cita = cita,
-                        navController = navController,
-                        citaViewModel = citaViewModel,
-                        onSolicitarEliminar = {
-                            citaAEliminar = it
-                            showDialog = true
+                else -> {
+                    // Agrupar por mes
+                    val citasAgrupadas = citaState.citas
+                        .sortedBy {
+                            it.fecha.split("/").let { partes ->
+                                val day = partes[0].padStart(2, '0')
+                                val month = partes[1].padStart(2, '0')
+                                val year = partes[2]
+                                "$year$month$day".toInt()
+                            }
                         }
-                    )
+                        .groupBy { cita ->
+                            val partes = cita.fecha.split("/")
+                            val month = partes[1].toInt()
+                            val year = partes[2]
+                            val nombreMes = listOf(
+                                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                            )[month - 1]
+                            "$nombreMes $year"
+                        }
+
+                    citasAgrupadas.forEach { (mesAnio, citas) ->
+                        item {
+                            Text(
+                                text = mesAnio,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+
+                        items(citas, key = { it.idCita }) { cita ->
+                            CitaCard(
+                                cita = cita,
+                                navController = navController,
+                                citaViewModel = citaViewModel,
+                                onSolicitarEliminar = {
+                                    citaAEliminar = it
+                                    showDialog = true
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
 
-    // Diálogo para eliminar
-    if (showDialog && citaAEliminar != null) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Confirmar eliminación") },
-            text = { Text("¿Estás seguro de que deseas eliminar esta cita?") },
-            confirmButton = {
-                Button(onClick = {
-                    citaAEliminar?.let { citaViewModel.eliminarCita(it.idCita) }
-                    showDialog = false
-                }) {
-                    Text("Eliminar")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
-}
-
-@Composable
-fun CitaCard(
-    cita: CitaModel,
-    navController: NavController,
-    citaViewModel: CitaViewModel,
-    onSolicitarEliminar: (CitaModel) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp), // Más compacto
-        shape = RoundedCornerShape(6.dp), // Un poco más ajustado
-        elevation = CardDefaults.elevatedCardElevation(2.dp) // Menor sombra
-    ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("📅 ${cita.fecha}  🕒 ${cita.hora}", style = MaterialTheme.typography.bodyMedium)
-
-                Row {
-                    IconButton(onClick = {
-                        navController.navigate("editarCita/${cita.idCita}")
+        // Diálogo para eliminar
+        if (showDialog && citaAEliminar != null) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Confirmar eliminación") },
+                text = { Text("¿Estás seguro de que deseas eliminar esta cita?") },
+                confirmButton = {
+                    Button(onClick = {
+                        citaAEliminar?.let { citaViewModel.eliminarCita(it.idCita) }
+                        showDialog = false
                     }) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Editar Cita")
+                        Text("Eliminar")
                     }
-
-                    IconButton(onClick = {
-                        onSolicitarEliminar(cita) // ✅ en lugar de eliminar directo
-                    }) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Eliminar Cita")
+                },
+                dismissButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text("Cancelar")
                     }
                 }
-            }
-
-            Text(
-                "📍 ${cita.ubicacion.provincia} - ${cita.ubicacion.hospital}",
-                style = MaterialTheme.typography.bodyLarge
             )
-            Text("📝 Motivo: ${cita.motivo}", style = MaterialTheme.typography.bodyLarge)
-            Text("👨‍⚕️ Médico: ${cita.medico}", style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
+
+
