@@ -10,5 +10,6 @@ data class CitaModel(
     val medico: String = "",
     val motivo: String = "",
     val estado: String = "" //Confirmada, cancelada, completada
+
 )
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.agendamedica.model.CitaModel
 import com.example.agendamedica.model.Ubicacion
 import com.example.agendamedica.ui.state.CitaState
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,8 @@ class CitaViewModel  : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
             val nuevaCita = CitaModel(
                 idCita = System.currentTimeMillis().toString(),
                 fecha = fecha,
@@ -40,12 +43,12 @@ class CitaViewModel  : ViewModel() {
                 ubicacion = Ubicacion(provincia, hospital),
                 medico = medico,
                 motivo = motivo,
-                //estado = "confirmada"
+                usuarioId = userId // ✅ ahora la cita se asocia al usuario actual
             )
 
             try {
                 citasCollection.document(nuevaCita.idCita).set(nuevaCita).await()
-                cargarCitas() // recarga desde Firebase
+                cargarCitas()
             } catch (e: Exception) {
                 _state.value = _state.value.copy(error = "Error al guardar cita: ${e.message}")
             }
@@ -58,12 +61,22 @@ class CitaViewModel  : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val userId = currentUser?.uid ?: return@launch
+
             try {
-                val snapshot = citasCollection.get().await()
+                val snapshot = citasCollection
+                    .whereEqualTo("usuarioId", userId) // 👈 filtro
+                    .get()
+                    .await()
+
                 val citas = snapshot.toObjects(CitaModel::class.java)
                 _state.value = _state.value.copy(citas = citas, isLoading = false)
             } catch (e: Exception) {
-                _state.value = _state.value.copy(error = "Error al cargar citas: ${e.message}", isLoading = false)
+                _state.value = _state.value.copy(
+                    error = "Error al cargar citas: ${e.message}",
+                    isLoading = false
+                )
             }
         }
     }
@@ -85,12 +98,23 @@ class CitaViewModel  : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val userId = currentUser?.uid ?: return@launch
+
             try {
-                val snapshot = citasCollection.get().await()
+                val snapshot = citasCollection
+                    .whereEqualTo("idCita", idCita)
+                    .whereEqualTo("usuarioId", userId) // 👈 validación de seguridad
+                    .get()
+                    .await()
+
                 val citas = snapshot.toObjects(CitaModel::class.java)
                 _state.value = _state.value.copy(citas = citas, isLoading = false)
             } catch (e: Exception) {
-                _state.value = _state.value.copy(error = "Error al cargar citas: ${e.message}", isLoading = false)
+                _state.value = _state.value.copy(
+                    error = "Error al cargar cita: ${e.message}",
+                    isLoading = false
+                )
             }
         }
     }
@@ -107,14 +131,18 @@ class CitaViewModel  : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                val userId = currentUser?.uid ?: return@launch  //btenemos el usuario actual
+
                 val citaActualizada = CitaModel(
                     idCita = idCita,
                     fecha = fecha,
                     hora = hora,
                     ubicacion = Ubicacion(provincia, hospital),
-                    medico = medico,  // Puedes asignar un médico si es necesario
+                    medico = medico,
                     motivo = motivo,
-                    estado = "confirmada" // Puedes cambiar el estado si es necesario
+                    estado = "confirmada",
+                    usuarioId = userId //para que siga asociada al usuario
                 )
 
                 citasCollection.document(idCita).set(citaActualizada).await()
@@ -124,6 +152,4 @@ class CitaViewModel  : ViewModel() {
             }
         }
     }
-
-
 }

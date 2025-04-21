@@ -2,11 +2,14 @@ package com.example.agendamedica.data.database.repository
 
 import com.example.agendamedica.data.database.interfaces.CitaDao
 import com.example.agendamedica.model.CitaModel
+import com.google.firebase.auth.FirebaseAuth
 
 class CitaRepository(private val citaDao: CitaDao) {
 
     // Agregar una nueva cita
     suspend fun agregarCita(cita: CitaModel) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid ?: return
         citaDao.agregarCita(cita)  // Llamada a CitaDao para agregar
     }
 

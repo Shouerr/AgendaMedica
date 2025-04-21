@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
@@ -39,6 +41,7 @@ import com.example.agendamedica.model.CitaModel
 import com.example.agendamedica.viewmodel.AuthViewModel
 import com.example.agendamedica.viewmodel.CitaViewModel
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -54,14 +57,15 @@ fun HomeScreen(
     var showDialog by remember { mutableStateOf(false) }
     var citaAEliminar by remember { mutableStateOf<CitaModel?>(null) }
 
-    // ✅ Solo cargar citas una vez
+    //
     LaunchedEffect(Unit) {
         citaViewModel.cargarCitas()
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Agenda Médica") },
+            TopAppBar(
+                title = { Text("Agenda Médica") },
                 actions = {
                     IconButton(onClick = toggleTheme) {
                         Icon(
@@ -73,49 +77,68 @@ fun HomeScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Bienvenido a tu Agenda Médica", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(8.dp))
+            item {
+                Text(
+                    "Bienvenido a tu Agenda Médica",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Button(onClick = { navController.navigate("cita") }) {
-                Text("Agendar nueva cita")
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Button(onClick = {
-                authViewModel.logout()
-                navController.navigate("login") {
-                    popUpTo(0)
-                    launchSingleTop = true
+                Button(onClick = { navController.navigate("cita") }) {
+                    Text("Agendar nueva cita")
                 }
-            }) {
-                Text("Cerrar sesión")
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(onClick = { navController.navigate("perfil") }) {
+                    Text("Ver perfil")
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(onClick = {
+            authViewModel.logout()
+            navController.navigate("login") {
+                popUpTo(0)
+                launchSingleTop = true
+            }
+        }) {
+            Text("Cerrar sesión")
+        }
+
+
+                Spacer(modifier = Modifier.height(35.dp))
+
+                Text("Tus citas:", style = MaterialTheme.typography.titleLarge)
+                //Spacer(modifier = Modifier.height(2.dp))
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            when {
+                citaState.isLoading -> item {
+                    CircularProgressIndicator()
+                }
 
-            Button(onClick = { navController.navigate("perfil") }) {
-                Text("Ver perfil")
-            }
+                citaState.citas.isEmpty() -> item {
+                    Text("No hay citas registradas.")
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("Tus citas:", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(10.dp))
-
-            if (citaState.isLoading) {
-                CircularProgressIndicator()
-            } else if (citaState.citas.isEmpty()) {
-                Text("No hay citas registradas.")
-            } else {
-                citaState.citas.forEach { cita ->
-                    CitaCard(cita, navController, citaViewModel)
+                else -> items(citaState.citas, key = { it.idCita }) { cita ->
+                    CitaCard(
+                        cita = cita,
+                        navController = navController,
+                        citaViewModel = citaViewModel,
+                        onSolicitarEliminar = {
+                            citaAEliminar = it
+                            showDialog = true
+                        }
+                    )
                 }
             }
         }
@@ -148,39 +171,44 @@ fun HomeScreen(
 fun CitaCard(
     cita: CitaModel,
     navController: NavController,
-    citaViewModel: CitaViewModel
+    citaViewModel: CitaViewModel,
+    onSolicitarEliminar: (CitaModel) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.elevatedCardElevation(4.dp)
+            .padding(vertical = 4.dp), // Más compacto
+        shape = RoundedCornerShape(6.dp), // Un poco más ajustado
+        elevation = CardDefaults.elevatedCardElevation(2.dp) // Menor sombra
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Fecha: ${cita.fecha} - Hora: ${cita.hora}")
-            Text("Ubicación: ${cita.ubicacion.provincia} - ${cita.ubicacion.hospital}")
-            Text("Motivo: ${cita.motivo}")
-            Text("Médico: ${cita.medico}")
-
+        Column(modifier = Modifier.padding(10.dp)) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.End
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = {
-                    navController.navigate("editarCita/${cita.idCita}")
-                }) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar Cita")
-                }
+                Text("📅 ${cita.fecha}  🕒 ${cita.hora}", style = MaterialTheme.typography.bodyMedium)
 
-                IconButton(onClick = {
-                    citaViewModel.eliminarCita(cita.idCita)
-                }) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Cita")
+                Row {
+                    IconButton(onClick = {
+                        navController.navigate("editarCita/${cita.idCita}")
+                    }) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Editar Cita")
+                    }
+
+                    IconButton(onClick = {
+                        onSolicitarEliminar(cita) // ✅ en lugar de eliminar directo
+                    }) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Eliminar Cita")
+                    }
                 }
             }
+
+            Text(
+                "📍 ${cita.ubicacion.provincia} - ${cita.ubicacion.hospital}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text("📝 Motivo: ${cita.motivo}", style = MaterialTheme.typography.bodyLarge)
+            Text("👨‍⚕️ Médico: ${cita.medico}", style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
