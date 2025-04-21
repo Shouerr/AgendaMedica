@@ -48,7 +48,6 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
     val isLoading by authViewModel.isLoading.collectAsState()
 
     LaunchedEffect(userState) {
-        Log.d("RegistroScreen", "Entró en LaunchedEffect con userState: ${userState?.email}")
         if (userState != null) {
             navController.navigate("login") {
                 popUpTo("registro") { inclusive = true }
@@ -67,6 +66,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        //nombre
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
@@ -76,6 +76,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        //correo
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -85,6 +86,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        //contraseña
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -101,6 +103,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        //confirmar contra
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
@@ -117,6 +120,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        //para la validacion
         val contrasenasIguales = password == confirmPassword
 
         Button(
