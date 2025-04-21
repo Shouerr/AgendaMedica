@@ -13,8 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-
-class CitaViewModel  : ViewModel() {
+class CitaViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(CitaState())
     val state: StateFlow<CitaState> get() = _state
@@ -22,7 +21,6 @@ class CitaViewModel  : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val citasCollection = db.collection("citas")
 
-    // Función para agregar una cita
     fun agregarCita(
         fecha: String,
         hora: String,
@@ -43,7 +41,7 @@ class CitaViewModel  : ViewModel() {
                 ubicacion = Ubicacion(provincia, hospital),
                 medico = medico,
                 motivo = motivo,
-                usuarioId = userId // ✅ ahora la cita se asocia al usuario actual
+                usuarioId = userId
             )
 
             try {
@@ -66,59 +64,46 @@ class CitaViewModel  : ViewModel() {
 
             try {
                 val snapshot = citasCollection
-                    .whereEqualTo("usuarioId", userId) // 👈 filtro
+                    .whereEqualTo("usuarioId", userId)
                     .get()
                     .await()
 
                 val citas = snapshot.toObjects(CitaModel::class.java)
                 _state.value = _state.value.copy(citas = citas, isLoading = false)
             } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    error = "Error al cargar citas: ${e.message}",
-                    isLoading = false
-                )
+                _state.value = _state.value.copy(error = "Error al cargar citas: ${e.message}", isLoading = false)
             }
         }
     }
 
-    // Función para eliminar una cita
     fun eliminarCita(idCita: String) {
         viewModelScope.launch {
             try {
                 citasCollection.document(idCita).delete().await()
-                cargarCitas() // Recargar las citas después de la eliminación
+                cargarCitas()
             } catch (e: Exception) {
                 Log.e("CitaViewModel", "Error al eliminar cita: ${e.message}")
             }
         }
     }
 
-
     fun cargarCitaPorId(idCita: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            val userId = currentUser?.uid ?: return@launch
-
             try {
-                val snapshot = citasCollection
-                    .whereEqualTo("idCita", idCita)
-                    .whereEqualTo("usuarioId", userId) // 👈 validación de seguridad
-                    .get()
-                    .await()
-
-                val citas = snapshot.toObjects(CitaModel::class.java)
-                _state.value = _state.value.copy(citas = citas, isLoading = false)
+                val doc = citasCollection.document(idCita).get().await()
+                val cita = doc.toObject(CitaModel::class.java)
+                if (cita != null) {
+                    _state.value = _state.value.copy(citas = listOf(cita), isLoading = false)
+                } else {
+                    _state.value = _state.value.copy(error = "Cita no encontrada", isLoading = false)
+                }
             } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    error = "Error al cargar cita: ${e.message}",
-                    isLoading = false
-                )
+                _state.value = _state.value.copy(error = "Error al cargar cita: ${e.message}", isLoading = false)
             }
         }
     }
-
 
     fun actualizarCita(
         idCita: String,
@@ -130,23 +115,22 @@ class CitaViewModel  : ViewModel() {
         medico: String
     ) {
         viewModelScope.launch {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+            val citaActualizada = CitaModel(
+                idCita = idCita,
+                fecha = fecha,
+                hora = hora,
+                ubicacion = Ubicacion(provincia, hospital),
+                medico = medico,
+                motivo = motivo,
+                estado = "confirmada",
+                usuarioId = userId
+            )
+
             try {
-                val currentUser = FirebaseAuth.getInstance().currentUser
-                val userId = currentUser?.uid ?: return@launch  //btenemos el usuario actual
-
-                val citaActualizada = CitaModel(
-                    idCita = idCita,
-                    fecha = fecha,
-                    hora = hora,
-                    ubicacion = Ubicacion(provincia, hospital),
-                    medico = medico,
-                    motivo = motivo,
-                    estado = "confirmada",
-                    usuarioId = userId //para que siga asociada al usuario
-                )
-
                 citasCollection.document(idCita).set(citaActualizada).await()
-                cargarCitas()  // Recargar las citas después de actualizar
+                cargarCitas()
             } catch (e: Exception) {
                 Log.e("CitaViewModel", "Error al actualizar cita: ${e.message}")
             }

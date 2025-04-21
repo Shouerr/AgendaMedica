@@ -129,7 +129,13 @@ fun HomeScreen(
                     Text("No hay citas registradas.")
                 }
 
-                else -> items(citaState.citas, key = { it.idCita }) { cita ->
+                else -> items(citaState.citas.sortedBy { it.fecha.split("/").let { partes ->
+                        val day = partes[0].padStart(2, '0')
+                        val month = partes[1].padStart(2, '0')
+                        val year = partes[2]
+                        "$year$month$day".toInt()
+                    }}, key = { it.idCita }) { cita ->
+
                     CitaCard(
                         cita = cita,
                         navController = navController,
