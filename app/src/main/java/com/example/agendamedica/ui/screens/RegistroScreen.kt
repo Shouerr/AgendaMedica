@@ -7,8 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -23,22 +28,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.agendamedica.viewmodel.AuthViewModel
-
 
 @Composable
 fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     val userState by authViewModel.user.collectAsState()
     val authError by authViewModel.authError.collectAsState()
     val isLoading by authViewModel.isLoading.collectAsState()
-
-    // Mover la navegación al lugar correcto después de que el usuario se registre
 
     LaunchedEffect(userState) {
         Log.d("RegistroScreen", "Entró en LaunchedEffect con userState: ${userState?.email}")
@@ -82,28 +89,55 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            enabled = !isLoading
+            enabled = !isLoading,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(icon, contentDescription = "Mostrar/Ocultar contraseña")
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirmar Contraseña") },
+            enabled = !isLoading,
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val icon = if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(icon, contentDescription = "Mostrar/Ocultar confirmación")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        val contrasenasIguales = password == confirmPassword
 
         Button(
             onClick = {
                 Log.d("RegistroScreen", "Botón de registro presionado")
                 authViewModel.register(email, password, nombre)
             },
-            enabled = !isLoading
+            enabled = !isLoading && contrasenasIguales && password.isNotBlank() && confirmPassword.isNotBlank()
         ) {
             Text("Registrarse")
         }
 
-        // Indicador de carga
+        if (!contrasenasIguales && confirmPassword.isNotBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Las contraseñas no coinciden", color = MaterialTheme.colorScheme.error)
+        }
+
         if (isLoading) {
             CircularProgressIndicator()
         }
 
-        //  Mostrar error si lo hay
         authError?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = it, color = MaterialTheme.colorScheme.error)
@@ -113,7 +147,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
 
         TextButton(
             onClick = {
-                authViewModel.resetError() // Limpia error si había
+                authViewModel.resetError()
                 navController.navigate("login")
             }
         ) {

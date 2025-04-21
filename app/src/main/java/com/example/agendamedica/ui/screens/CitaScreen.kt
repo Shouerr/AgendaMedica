@@ -44,7 +44,7 @@ import java.util.Calendar
 @Composable
 fun CitaScreen(
     navController: NavController,
-    viewModel: CitaViewModel = viewModel()
+    viewModel: CitaViewModel = viewModel(),
 ) {
     // Mapa de provincias y hospitales
     val hospitalesPorProvincia = mapOf(
@@ -123,6 +123,14 @@ fun CitaScreen(
     // Estado para el TimePickerDialog
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+
+    // Estados de los dropdowns
+    var provinciaExpanded by remember { mutableStateOf(false) }
+    var hospitalExpanded by remember { mutableStateOf(false) }
+    val hospitales = hospitalesPorProvincia[provincia] ?: emptyList()
+
+
+
     val timePickerDialog = remember {
         TimePickerDialog(
             context,
@@ -135,16 +143,9 @@ fun CitaScreen(
         )
     }
 
-    // Estados de los dropdowns
-    var provinciaExpanded by remember { mutableStateOf(false) }
-    var hospitalExpanded by remember { mutableStateOf(false) }
 
-    val hospitales = hospitalesPorProvincia[provincia] ?: emptyList()
-
-    //val context = LocalContext.current
-    //val calendar = Calendar.getInstance()
-    val datePickerDialog = remember { DatePickerDialog(context, DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-
+    val datePickerDialog = remember {
+        DatePickerDialog(context, DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
         // Asignamos la fecha seleccionada al estado
         fecha = "$dayOfMonth/${month + 1}/$year"  // mes + 1 porque los meses empiezan en 0
     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)) }
@@ -228,6 +229,7 @@ fun CitaScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+
 
         // Selector de Hospital (filtrado)
         if (provincia.isNotEmpty()) {
