@@ -8,6 +8,8 @@ plugins {
 //agregamos la dependencia de google
     id("com.google.gms.google-services") version "4.4.2" apply false
 
-// Jetpack Compose Navigation
+    id("com.google.dagger.hilt.android") version "2.48" apply false
+
+
 }
 

@@ -22,34 +22,35 @@ class AuthViewModel(
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
     init {
-        _user.value = userRepository.getCurrentUser()
+        viewModelScope.launch {
+            _user.value = userRepository.getCurrentUser()
+            Log.d("AuthViewModel", "init user: ${_user.value?.email}")
+        }
     }
 
     // Registrar usuario con email, password y nombre
     fun register(email: String, password: String, nombre: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            Log.d("AuthViewModel", "Inicio del registro...")
+            Log.d("AuthViewModel", "Intentando registrar usuario...")
 
             try {
                 val newUser = userRepository.registerUser(email, password, nombre)
 
-                // Después de intentar registrar el usuario, restablecer el estado de carga
                 _isLoading.value = false
 
                 if (newUser != null) {
-                    // Actualiza el estado de _user con el FirebaseUser directamente
-                    _user.value = newUser // Aquí asignamos el FirebaseUser a _user
+                    Log.d("AuthViewModel", "Usuario registrado exitosamente: ${newUser.email}")
+                    _user.value = newUser
                     _authError.value = null
-                    Log.d("AuthViewModel", "Registro completado.")
                 } else {
+                    Log.e("AuthViewModel", "El usuario ya existe o no se pudo registrar.")
                     _authError.value = "El usuario ya existe"
-                    Log.e("AuthViewModel", "Usuario no registrado: Usuario ya existe.")
                 }
             } catch (e: Exception) {
                 _isLoading.value = false
+                Log.e("AuthViewModel", "Error durante el registro: ${e.message}")
                 _authError.value = "Error al registrar usuario: ${e.message}"
-                Log.e("AuthViewModel", "Error al registrar usuario: ${e.message}")
             }
         }
     }

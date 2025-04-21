@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.dagger.hilt.android") // ✅ este es el de Hilt
+    kotlin("kapt") // ✅ este es necesario para que compile los @Inject
+
 
 
     //instrucciones de firebase para los servicios de googlee
@@ -78,6 +81,7 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.6.0")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
 
 
@@ -97,6 +101,8 @@ dependencies {
 
     implementation("androidx.compose.material3:material3:1.2.0")
 
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-compiler:2.48")
 
 }
 

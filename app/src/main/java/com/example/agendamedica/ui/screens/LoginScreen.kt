@@ -1,5 +1,6 @@
 package com.example.agendamedica.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,13 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.agendamedica.viewmodel.AuthViewModel
 
 
 @Composable
-fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -102,7 +102,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
 
         TextButton(onClick = {
             authViewModel.resetError() // Limpia el error al cambiar de pantalla
-            navController.navigate("Registro")
+            Log.d("LoginScreen", "Botón de registro presionado")
+            navController.navigate("registro")
         }) {
             Text("¿No tienes cuenta? Regístrate aquí")
         }

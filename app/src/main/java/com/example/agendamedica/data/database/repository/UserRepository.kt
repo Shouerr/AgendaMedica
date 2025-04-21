@@ -18,15 +18,21 @@ class UserRepository {
     suspend fun registerUser(email: String, password: String, nombre: String): FirebaseUser? {
         return try {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
-            result.user?.let { firebaseUser ->
+            val firebaseUser = auth.currentUser  // <- más confiable que result.user
+
+            if (firebaseUser != null) {
+                Log.d("UserRepository", "Usuario autenticado: ${firebaseUser.email}")
                 val user = UserModel(
                     id = firebaseUser.uid,
                     nombre = nombre,
                     correoElectronico = email
                 )
                 registrarUsuario(user)
+                firebaseUser
+            } else {
+                Log.e("UserRepository", "FirebaseUser es null después de registrar.")
+                null
             }
-            result.user
         } catch (e: Exception) {
             Log.e("UserRepository", "Error al registrar usuario: ${e.message}")
             null
